@@ -14,14 +14,39 @@ import org.springframework.stereotype.Service;
 import java.util.HashSet;
 import java.util.Set;
 
+
+/**
+ * Service class for handling authentication-related operations, such as user registration and login.
+ * This service interacts with the {@link UserRepository} for user data access and the
+ * {@link JwtUtil} for JWT token generation.
+ */
 @Service
 @RequiredArgsConstructor
 public class AuthService {
+    /**
+     * Repository for accessing user data.  Used for checking email existence, saving new users,
+     * and retrieving user details during login.  Injected via constructor injection.
+     */
     private final UserRepository userRepository;
+    /**
+     * Utility class for JWT operations (generating tokens).  Used for creating JWT tokens
+     * upon successful registration or login.  Injected via constructor injection.
+     */
     private final JwtUtil jwtUtil;
+    /**
+     * Password encoder for hashing and verifying passwords.  Used to securely store user passwords
+     * during registration and to verify passwords during login.  A BCryptPasswordEncoder is
+     * instantiated here.  Consider making this injectable.
+     */
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    // Register a new user
+    /**
+     * Registers a new user in the system.
+     *
+     * @param request The {@link AuthRequest} containing the user's registration details.
+     * @return An {@link AuthResponse} containing the JWT token and a success message.
+     * @throws RuntimeException If the email is already in use.
+     */
     public AuthResponse register(AuthRequest request) {
         // Check if email already in use
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -47,7 +72,13 @@ public class AuthService {
         return new AuthResponse(token, "User registered successfully!");
     }
 
-    // Login Existing User
+    /**
+     * Logs in an existing user.
+     *
+     * @param request The {@link LoginRequest} containing the user's email and password.
+     * @return An {@link AuthResponse} containing the JWT token and a success message.
+     * @throws RuntimeException If the email or password is invalid.
+     */
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new RuntimeException("Invalid email or password"));
 
